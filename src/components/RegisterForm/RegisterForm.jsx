@@ -1,42 +1,16 @@
 import { Form, FormRow } from './RegisterForm.styled';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { register } from '../../redux/auth/authOperation';
-import { useDispatch, useSelector } from 'react-redux';
-import { getErrorAuth } from '../../redux/auth/authSelectors';
+import { useDispatch } from 'react-redux';
 import { Button, TextField } from '@mui/material';
 
 const RegisterForm = () => {
 
   const dispatch = useDispatch();
-  const errorRequest = useSelector(getErrorAuth);
 
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isValid, setIsValid] = useState(false);
-
-  useEffect(() => {
-    if (errorRequest) {
-      alert(errorRequest);
-    } else {
-      setUsername('');
-      setEmail('');
-      setPassword('');
-      setIsValid(false);
-    }
-  }, [errorRequest]);
-
-  const checkValid = useCallback(() => {
-    setIsValid(
-      username.trim().length > 0
-      && email.trim().length > 0
-      && password.trim().length > 0
-    );
-  }, [username, email, password]);
-
-  useEffect(() => {
-    checkValid();
-  }, [username, email, password, checkValid]);
 
   const handleChange = ({ target }) => {
     switch (target.name) {
@@ -56,7 +30,19 @@ const RegisterForm = () => {
 
     const dataUser = { name: username, email, password };
 
-    dispatch(register(dataUser));
+    dispatch(register(dataUser))
+      .then(res => {
+        if (res.error) {
+          alert(res.payload);
+        } else {
+          setUsername('');
+          setEmail('');
+          setPassword('');
+        }
+      })
+      .catch(err => {
+        console.error(err.message);
+      });
   };
 
   return (
@@ -95,7 +81,7 @@ const RegisterForm = () => {
         />
       </FormRow>
 
-      { isValid && <Button variant="outlined" type="submit">Register</Button> }
+      <Button variant="outlined" type="submit">Register</Button>
 
     </Form>
   );

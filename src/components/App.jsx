@@ -4,7 +4,9 @@ import { lazy, useEffect } from 'react';
 import { RestrictedRoute } from './RestrictedRoute';
 import { PrivateRoute } from './PrivateRoute';
 import { refresh } from '../redux/auth/authOperation';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { getIsRefreshing } from '../redux/auth/authSelectors';
+import { Typography } from '@mui/material';
 
 const HomePage = lazy(() => import('../pages/Home'));
 const RegisterPage = lazy(() => import('../pages/Register'));
@@ -14,12 +16,17 @@ const ContactsPage = lazy(() => import('../pages/Contacts'));
 export const App = () => {
 
   const dispatch = useDispatch();
+  const isRefreshing = useSelector(getIsRefreshing);
 
   useEffect(() => {
     dispatch(refresh());
   }, [dispatch]);
 
-  return (
+  return isRefreshing ? (
+    <Typography variant="h3" component="h2">
+      Refreshing user...
+    </Typography>
+  ) : (
     <>
       <Routes>
         <Route path="/" element={ <Layout /> }>

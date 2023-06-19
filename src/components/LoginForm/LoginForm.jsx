@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { getErrorAuth } from '../../redux/auth/authSelectors';
+import { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { login } from '../../redux/auth/authOperation';
 import { Button, TextField } from '@mui/material';
 import { Form, FormRow } from './LoginForm.styled';
@@ -8,32 +7,9 @@ import { Form, FormRow } from './LoginForm.styled';
 const LoginForm = () => {
 
   const dispatch = useDispatch();
-  const errorRequest = useSelector(getErrorAuth);
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isValid, setIsValid] = useState(false);
-
-  useEffect(() => {
-    if (errorRequest) {
-      alert(errorRequest);
-    } else {
-      setEmail('');
-      setPassword('');
-      setIsValid(false);
-    }
-  }, [errorRequest]);
-
-  const checkValid = useCallback(() => {
-    setIsValid(
-      email.trim().length > 0
-      && password.trim().length > 0
-    );
-  }, [email, password]);
-
-  useEffect(() => {
-    checkValid();
-  }, [email, password, checkValid]);
 
   const handleChange = ({ target }) => {
     switch (target.name) {
@@ -51,7 +27,18 @@ const LoginForm = () => {
 
     const dataUser = { email, password };
 
-    dispatch(login(dataUser));
+    dispatch(login(dataUser))
+      .then(res => {
+        if (res.error) {
+          alert(res.payload);
+        } else {
+          setEmail('');
+          setPassword('');
+        }
+      })
+      .catch(err => {
+        console.error(err.message);
+      });
   };
 
   return (
@@ -79,7 +66,7 @@ const LoginForm = () => {
         />
       </FormRow>
 
-      { isValid && <Button variant="outlined" type="submit">Log In</Button> }
+      <Button variant="outlined" type="submit">Log In</Button>
     </Form>
   );
 };
